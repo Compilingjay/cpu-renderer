@@ -6,6 +6,13 @@
 #include <vector>
 
 template <SizedNumeric T>
+struct Mesh {
+    public:
+        std::vector<Vec3<T>> vertex_buf;
+        std::vector<Vec3<T>> faces_buf;
+};
+
+template <SizedNumeric T>
 std::vector<Vec3<T>> get_cube_vertices() {
     return {
         {-1.0f, -1.0f, -1.0f},

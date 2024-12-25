@@ -33,8 +33,7 @@ struct RenderState {
         SDL_Event event;
         Camera<T> camera;
         std::vector<uint32_t> c_buf;
-        std::vector<Vec3<T>> vertex_buf;
-        std::vector<Vec3<T>> faces_buf;
+        std::vector<Mesh<T>> m;
 
         RenderState() {};
         RenderState(const char title[]) {
@@ -81,8 +80,9 @@ struct RenderState {
             c_buf = std::vector<uint32_t>(w*h, 0x00000000);
 
             // // auto vertex_buf = get_9x9x9_vectors<float>();
-            vertex_buf = get_cube_vertices<T>();
-            faces_buf = get_cube_faces<T>();
+            m = std::vector<Mesh<T>>(1);
+            m[0].vertex_buf = get_cube_vertices<T>();
+            m[0].faces_buf = get_cube_faces<T>();
             camera = Camera<T> { { 0.0f, 0.0f, -5.0f }, { 0.0f, 0.0f, 0.0f }, 640.0f };
         }
 
@@ -107,23 +107,25 @@ struct RenderState {
             std::vector<Vec3<T>> face_vertices(3);
             std::vector<Vec2<int>> transformed_vertices(3);
 
-            for (Vec3 face : faces_buf) {
-                face_vertices = { vertex_buf[face.x], vertex_buf[face.y], vertex_buf[face.z] };
-                for (int i = 0; i < 3; ++i) {
-                    Vec3 rot_vi = rotate_axis_x(rotate_axis_y(rotate_axis_z(face_vertices[i], rot.z), rot.y), rot.x);
-                    // Vec2 proj_pt = project_orthographic(rot_vi*0.25, c); // fov needs to be reduced for this type of projection to function properly, hence *0.25
-                    Vec2 proj_pt = project_perspective(rot_vi);
-                    int x = proj_pt.x + x_off;
-                    int y = proj_pt.y + y_off;
-                    draw_rectangle(x, y, 4, 4, color);
-                    transformed_vertices[i] = { x, y };
-                }
+            for (int i = 0; i < m.size(); ++i) {
+                for (Vec3 face : m[i].faces_buf) {
+                    face_vertices = { m[i].vertex_buf[face.x], m[i].vertex_buf[face.y], m[i].vertex_buf[face.z] };
+                    for (int i = 0; i < 3; ++i) {
+                        Vec3 rot_vi = rotate_axis_x(rotate_axis_y(rotate_axis_z(face_vertices[i], rot.z), rot.y), rot.x);
+                        // Vec2 proj_pt = project_orthographic(rot_vi*0.25, c); // fov needs to be reduced for this type of projection to function properly, hence *0.25
+                        Vec2 proj_pt = project_perspective(rot_vi);
+                        int x = proj_pt.x + x_off;
+                        int y = proj_pt.y + y_off;
+                        draw_rectangle(x, y, 4, 4, color);
+                        transformed_vertices[i] = { x, y };
+                    }
 
-                draw_triangle(
-                    transformed_vertices[0].x, transformed_vertices[0].y,
-                    transformed_vertices[1].x, transformed_vertices[1].y, 
-                    transformed_vertices[2].x, transformed_vertices[2].y,
-                    0xcc8800ff);
+                    draw_triangle(
+                        transformed_vertices[0].x, transformed_vertices[0].y,
+                        transformed_vertices[1].x, transformed_vertices[1].y, 
+                        transformed_vertices[2].x, transformed_vertices[2].y,
+                        0xcc8800ff);
+                }
             }
 
             // loop over all points and rotate
