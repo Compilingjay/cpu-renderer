@@ -1,7 +1,4 @@
-#include "camera.h"
-#include "mesh.h"
 #include "render_state.h"
-#include "vertex.h"
 
 void on_exit();
 
@@ -12,19 +9,14 @@ int main(int argc, const char* argv[]) {
         return 1;
     }
 
-    RenderState rs;
+    RenderState<float>rs;
     try {
-        rs = RenderState(argv[1]);
+        rs = RenderState<float>(argv[1]);
     } catch (...) {
         return 1;
     }
-
-    // auto vertex_buf = get_9x9x9_vectors<float>();
-    auto vertex_buf = get_cube_vertices<float>();
-    auto faces_buf = get_cube_faces<float>();
-    auto camera = Camera { { 0.0f, 0.0f, -5.0f }, { 0.0f, 0.0f, 0.0f }, 640.0f };
-
-    rs.run(vertex_buf, faces_buf, camera);
+    
+    rs.run();
     return 0;
 }
 
