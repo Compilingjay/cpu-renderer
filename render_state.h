@@ -15,6 +15,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
+#include <span>
 #include <vector>
 
 constexpr float FPS = 30.0f;
@@ -50,14 +51,24 @@ struct RenderState {
 
             int x_off = w / 2;
             int y_off = h / 2;
+            std::vector<Vec2<int>> transformed_vertices(3);
 
             for (Vec3 face : faces_buf) {
                 std::vector<Vec3<T>> face_vertices = { vertices[face.x], vertices[face.y], vertices[face.z] };
                 for (int i = 0; i < 3; ++i) {
                     Vec3 rot_vi = rotate_axis_x(rotate_axis_y(rotate_axis_z(face_vertices[i], rot.z), rot.y), rot.x);
                     Vec2 proj_pt = project_perspective(rot_vi, c);
-                    draw_rectangle(proj_pt.x + x_off, proj_pt.y + y_off, 4, 4, color);
+                    int x = proj_pt.x + x_off;
+                    int y = proj_pt.y + y_off;
+                    draw_rectangle(x, y, 4, 4, color);
+                    transformed_vertices[i] = { x, y };
                 }
+
+                draw_triangle(
+                    transformed_vertices[0].x, transformed_vertices[0].y,
+                    transformed_vertices[1].x, transformed_vertices[1].y, 
+                    transformed_vertices[2].x, transformed_vertices[2].y,
+                    0xcc8800ff);
             }
 
             // loop over all points and rotate
@@ -78,7 +89,8 @@ struct RenderState {
         void draw_pixel(int x, int y, uint32_t color) noexcept;
         void draw_rectangle(int x, int y, int w, int h, uint32_t color) noexcept;
         void draw_grid(uint32_t color = 0x333333ff) noexcept;
-        void draw_line(int x1, int y1, int x2, int y2) noexcept;
+        void draw_line_dda(int x1, int y1, int x2, int y2, uint32_t color) noexcept;
+        void draw_triangle(int x1, int y1, int x2, int y2, int x3, int y3, uint32_t color) noexcept;
 
         bool process_input();
 

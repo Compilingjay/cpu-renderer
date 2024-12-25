@@ -1,4 +1,8 @@
 #include "render_state.h"
+#include <cassert>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
 
 RenderState::RenderState(const char title[]) {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
@@ -88,6 +92,41 @@ void RenderState::draw_grid(uint32_t color) noexcept {
             c_buf[(w * y) + x] = color;
         }
     }
+}
+
+void RenderState::draw_line_dda(int x1, int y1, int x2, int y2, uint32_t color) noexcept {
+    assert(x1 >= 0 && x1 < w);
+    assert(y1 >= 0 && y1 < h);
+    assert(x2 >= 0 && x2 < w);
+    assert(y2 >= 0 && y2 < h);
+
+    if (x1 > x2) { // unnecessary, except if you want render left to right
+        std::swap(x1, x2);
+        std::swap(y1, y2);
+    }
+
+    int delta_x = x2 - x1;
+    int delta_y = y2 - y1;
+
+    int longest_side_len = delta_x >= abs(delta_y) ? delta_x : abs(delta_y);
+
+    float x_inc = delta_x / static_cast<float>(longest_side_len);
+    float y_inc = delta_y / static_cast<float>(longest_side_len);
+
+    float curr_x = x1;
+    float curr_y = y1;
+
+    for (int i = 0; i < longest_side_len; ++i) {
+        draw_pixel(round(curr_x), round(curr_y), color);
+        curr_x += x_inc;
+        curr_y += y_inc;
+    }
+}
+
+void RenderState::draw_triangle(int x1, int y1, int x2, int y2, int x3, int y3, uint32_t color) noexcept {
+    draw_line_dda(x1, y1, x2, y2, color);
+    draw_line_dda(x1, y1, x3, y3, color);
+    draw_line_dda(x2, y2, x3, y3, color);
 }
 
 bool RenderState::process_input() {
