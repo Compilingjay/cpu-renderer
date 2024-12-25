@@ -131,21 +131,9 @@ struct RenderState {
 
                 m.rot += 0.02f;
             }
-
-            // loop over all points and rotate
-            // for (int i = 0; i < vertices.size(); ++i) {
-            //     // Vec2<int> proj_pt = project_orthographic(v[i], c);
-            //     Vec3 rot_vi = rotate_axis_x(rotate_axis_y(rotate_axis_z(vertices[i], rot.z), rot.y), rot.x);
-            //     Vec2 proj_pt = project_perspective(rot_vi, c);
-
-            //     assert(proj_pt.x+x_off >= 0 && proj_pt.x+x_off < w);
-            //     assert(proj_pt.y+y_off >= 0 && proj_pt.y+y_off < h);
-            //     draw_rectangle(proj_pt.x + x_off, proj_pt.y + y_off, 4, 4, color);
-            // }
         }
 
         void render() noexcept {
-            // SDL_RenderClear(renderer);
             SDL_UpdateTexture(texture, NULL, c_buf.data(), sizeof(uint32_t) * w);
             SDL_RenderTexture(renderer, texture, NULL, NULL);
             SDL_RenderPresent(renderer);
