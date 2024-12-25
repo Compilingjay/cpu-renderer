@@ -33,7 +33,7 @@ struct RenderState {
         SDL_Event event;
         Camera<T> camera;
         std::vector<uint32_t> c_buf;
-        std::vector<Mesh<T>> m;
+        std::vector<Mesh<T>> meshes;
 
         RenderState() {};
         RenderState(const char title[]) {
@@ -80,9 +80,10 @@ struct RenderState {
             c_buf = std::vector<uint32_t>(w*h, 0x00000000);
 
             // // auto vertex_buf = get_9x9x9_vectors<float>();
-            m = std::vector<Mesh<T>>(1);
-            m[0].vertex_buf = get_cube_vertices<T>();
-            m[0].faces_buf = get_cube_faces<T>();
+            meshes = std::vector<Mesh<T>>(1);
+            meshes[0].vertex_buf = get_cube_vertices<T>();
+            meshes[0].faces_buf = get_cube_faces<T>();
+            meshes[0].rot = { 0.0f, 0.0f, 0.0f };
             camera = Camera<T> { { 0.0f, 0.0f, -5.0f }, { 0.0f, 0.0f, 0.0f }, 640.0f };
         }
 
@@ -97,27 +98,28 @@ struct RenderState {
             };
         }
 
-        void update(const Vec3<T>& rot, uint32_t color) noexcept { // remove color later on? and refactor vec to be list of objects
+        void update(uint32_t color) noexcept { // remove color later on? and refactor vec to be list of objects
             
             draw_grid(0x333333ff);
 
             int x_off = w / 2;
             int y_off = h / 2;
             
-            std::vector<Vec3<T>> face_vertices(3);
+            std::vector<Vec3<T>> triangle_vertices(3);
             std::vector<Vec2<int>> transformed_vertices(3);
 
-            for (int i = 0; i < m.size(); ++i) {
-                for (Vec3 face : m[i].faces_buf) {
-                    face_vertices = { m[i].vertex_buf[face.x], m[i].vertex_buf[face.y], m[i].vertex_buf[face.z] };
+            
+
+            for (auto& m : meshes) {
+                for (auto face : m.faces_buf) {
+                    triangle_vertices = { m.vertex_buf[face.x], m.vertex_buf[face.y], m.vertex_buf[face.z] };
                     for (int i = 0; i < 3; ++i) {
-                        Vec3 rot_vi = rotate_axis_x(rotate_axis_y(rotate_axis_z(face_vertices[i], rot.z), rot.y), rot.x);
+                        Vec3 rot_vi = rotate_axis_x(rotate_axis_y(rotate_axis_z(triangle_vertices[i], m.rot.z), m.rot.y), m.rot.x);
+                        // Vec3 rot_vi = face_vertices[i];
                         // Vec2 proj_pt = project_orthographic(rot_vi*0.25, c); // fov needs to be reduced for this type of projection to function properly, hence *0.25
                         Vec2 proj_pt = project_perspective(rot_vi);
-                        int x = proj_pt.x + x_off;
-                        int y = proj_pt.y + y_off;
-                        draw_rectangle(x, y, 4, 4, color);
-                        transformed_vertices[i] = { x, y };
+                        transformed_vertices[i] = { proj_pt.x + x_off, proj_pt.y + y_off};
+                        draw_rectangle(transformed_vertices[i].x, transformed_vertices[i].y, 4, 4, color);
                     }
 
                     draw_triangle(
@@ -126,6 +128,8 @@ struct RenderState {
                         transformed_vertices[2].x, transformed_vertices[2].y,
                         0xcc8800ff);
                 }
+
+                m.rot += 0.02f;
             }
 
             // loop over all points and rotate
@@ -237,15 +241,13 @@ struct RenderState {
             auto start_time = std::chrono::high_resolution_clock::now();
             auto current_time = std::chrono::high_resolution_clock::now();
             SDL_Event event;
-            Vec3 rotation = Vec3<T>{0.0f, 0.0f, 0.0f};
-            int i = 0;
+
+            int debug_i = 0;
             
             auto prev_frame_time = SDL_GetTicksNS();
             float time_to_wait;
 
             while (true) {
-                // while (SDL_GetTicksNS() < curr_frame_time+FRAME_TARGET_TIME_NS) {}
-                // curr_frame_time += FRAME_TARGET_TIME_NS;
                 time_to_wait = FRAME_TARGET_TIME_NS - (SDL_GetTicksNS() - prev_frame_time);
                 if (time_to_wait > 0) {
                     SDL_DelayNS(time_to_wait);
@@ -257,16 +259,14 @@ struct RenderState {
 
                 if (!process_input()) {
                     current_time = std::chrono::high_resolution_clock::now();
-                    std::cout << "Program has been running for " << std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count() << " seconds, i = " << i << std::endl;
+                    std::cout << "Program has been running for " << std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count() << " seconds, i = " << debug_i << std::endl;
                     return;
                 }
-                rotation.z += 0.02f;
-                rotation.y += 0.02f;
-                rotation.z += 0.02f;
+
                 clear_buffer();
-                update(rotation, 0xDDDD00FF);
+                update(0xDDDD00FF);
                 render();
-                ++i;
+                ++debug_i;
             }
         }
 };

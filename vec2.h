@@ -19,6 +19,11 @@ public:
         y += v.y;
         return *this;
     };
+    Vec2& operator+=(T t) {
+        x += t;
+        y += t;
+        return *this;
+    };
     Vec2& operator-=(const Vec2& v) {
         x -= v.x;
         y -= v.y;

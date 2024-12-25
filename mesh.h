@@ -10,6 +10,7 @@ struct Mesh {
     public:
         std::vector<Vec3<T>> vertex_buf;
         std::vector<Vec3<T>> faces_buf;
+        Vec3<T> rot;
 };
 
 template <SizedNumeric T>
