@@ -1,7 +1,7 @@
 #include "camera.h"
+#include "mesh.h"
 #include "render_state.h"
-#include "3d.h"
-#include "vec3.h"
+#include "vertex.h"
 
 void on_exit();
 
@@ -19,10 +19,12 @@ int main(int argc, const char* argv[]) {
         return 1;
     }
 
-    auto vertex_buf = get_9x9x9_vectors<float>();
-    auto camera = Camera { Vec3 {0.0f, 0.0f, -5.0f}, Vec3<float>{ 0.0f, 0.0f, 0.0f }, 640.0f };
+    // auto vertex_buf = get_9x9x9_vectors<float>();
+    auto vertex_buf = get_cube_vertices<float>();
+    auto faces_buf = get_cube_faces<float>();
+    auto camera = Camera { { 0.0f, 0.0f, -5.0f }, { 0.0f, 0.0f, 0.0f }, 640.0f };
 
-    rs.run(vertex_buf, camera);
+    rs.run(vertex_buf, faces_buf, camera);
     return 0;
 }
 

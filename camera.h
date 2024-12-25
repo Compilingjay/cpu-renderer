@@ -11,7 +11,4 @@ class Camera {
         T fov_angle;
 };
 
-template class Camera<float>;
-template class Camera<double>;
-
 #endif

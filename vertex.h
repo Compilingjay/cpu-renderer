@@ -1,6 +1,8 @@
+#ifndef VERTEX_H
+#define VERTEX_H
+
 #include "vec3.h"
 
-#include <cstdio>
 #include <vector>
 
 template <SizedNumeric T>
@@ -18,3 +20,5 @@ std::vector<Vec3<T>> get_9x9x9_vectors() {
 
     return vec;
 }
+
+#endif

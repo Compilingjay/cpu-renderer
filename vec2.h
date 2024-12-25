@@ -42,11 +42,11 @@ public:
 };
 
 template <SizedNumeric T>
-inline Vec2<T> operator-(const Vec2<T>& a, const Vec2<T>& b) { return Vec2 { a.x+b.x, a.y+b.y }; }
+inline Vec2<T> operator-(const Vec2<T>& a, const Vec2<T>& b) { return { a.x+b.x, a.y+b.y }; }
 template <SizedNumeric T>
-inline Vec2<T> operator+(const Vec2<T>& a, const Vec2<T>& b) { return Vec2 { a.x+b.x, a.y+b.y }; }
+inline Vec2<T> operator+(const Vec2<T>& a, const Vec2<T>& b) { return { a.x+b.x, a.y+b.y }; }
 template <SizedNumeric T>
-inline Vec2<T> operator*(Vec2<T>& a, T b) { return Vec2 { a.x*b, a.y*b }; };
+inline Vec2<T> operator*(Vec2<T>& a, T b) { return { a.x*b, a.y*b }; };
 
 template <SizedNumeric T>
 inline T dot(const Vec2<T>& a, const Vec2<T>& b) {  return a.x*b.x + a.y*b.y; }
@@ -55,11 +55,11 @@ inline T cross(const Vec2<T>& a, const Vec2<T>& b) { return a.x*b.y - a.y*b.x; }
 
 // rotation by -90 degrees? or cross product of input vec and unit vector pointing "up"? at z?
 template <SizedNumeric T>
-inline Vec2<T> perpendicular(const Vec2<T>& v) { return Vec2 {v.y, -v.x}; }
+inline Vec2<T> perpendicular(const Vec2<T>& v) { return { v.y, -v.x }; }
 
 template <SizedNumeric T>
 inline Vec2<T> rotate(const Vec2<T>& v, T angle) {
-    return Vec2 {
+    return {
         static_cast<T>(v.x*cos(angle) - v.y*sin(angle)),
         static_cast<T>(v.x*sin(angle) + v.y*cos(angle))
     };

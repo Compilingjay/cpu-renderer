@@ -56,11 +56,11 @@ public:
 };
 
 template <SizedNumeric T>
-inline Vec3<T> operator-(const Vec3<T>& a, const Vec3<T>& b) { return Vec3 { a.x+b.x, a.y+b.y, a.z+b.z }; }
+inline Vec3<T> operator-(const Vec3<T>& a, const Vec3<T>& b) { return { a.x+b.x, a.y+b.y, a.z+b.z }; }
 template <SizedNumeric T>
-inline Vec3<T> operator+(const Vec3<T>& a, const Vec3<T>& b) { return Vec3 { a.x+b.x, a.y+b.y, a.z+b.z }; }
+inline Vec3<T> operator+(const Vec3<T>& a, const Vec3<T>& b) { return { a.x+b.x, a.y+b.y, a.z+b.z }; }
 template <SizedNumeric T>
-inline Vec3<T> operator*(Vec3<T>& a, float b) { return Vec3 { a.x*b, a.y*b, a.z*b }; };
+inline Vec3<T> operator*(Vec3<T>& a, float b) { return { a.x*b, a.y*b, a.z*b }; };
 
 template <SizedNumeric T>
 inline float dot(const Vec3<T>& a, const Vec3<T>& b) {
@@ -69,13 +69,13 @@ inline float dot(const Vec3<T>& a, const Vec3<T>& b) {
 }
 template <SizedNumeric T>
 inline Vec3<T> cross(const Vec3<T>& a, const Vec3<T>& b) {
-    return Vec3 { a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x };
+    return { a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x };
     // return a * b;
 }
 
 template <SizedNumeric T>
 inline Vec3<T> rotate_axis_x(const Vec3<T>& v, T angle) {
-    return Vec3 {
+    return {
         v.x,
         static_cast<T>(v.y*cos(angle) - v.z*sin(angle)),
         static_cast<T>(v.y*sin(angle) + v.z*cos(angle)),
@@ -84,7 +84,7 @@ inline Vec3<T> rotate_axis_x(const Vec3<T>& v, T angle) {
 
 template <SizedNumeric T>
 inline Vec3<T> rotate_axis_y(const Vec3<T>& v, T angle) {
-    return Vec3 {
+    return {
         static_cast<T>(v.x*cos(angle) - v.z*sin(angle)),
         v.y,
         static_cast<T>(v.x*sin(angle) + v.z*cos(angle)),
@@ -93,7 +93,7 @@ inline Vec3<T> rotate_axis_y(const Vec3<T>& v, T angle) {
 
 template <SizedNumeric T>
 inline Vec3<T> rotate_axis_z(const Vec3<T>& v, T angle) {
-    return Vec3 {
+    return {
         static_cast<T>(v.x*cos(angle) - v.y*sin(angle)),
         static_cast<T>(v.x*sin(angle) + v.y*cos(angle)),
         v.z
