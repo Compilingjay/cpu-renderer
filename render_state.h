@@ -79,7 +79,6 @@ struct RenderState {
 
             c_buf = std::vector<uint32_t>(w*h, 0x00000000);
 
-            // // auto vertex_buf = get_9x9x9_vectors<float>();
             meshes = std::vector<Mesh<T>>(1);
             meshes[0].vertex_buf = get_cube_vertices<T>();
             meshes[0].faces_buf = get_cube_faces<T>();
@@ -107,8 +106,6 @@ struct RenderState {
             
             std::vector<Vec3<T>> triangle_vertices(3);
             std::vector<Vec2<int>> transformed_vertices(3);
-
-            
 
             for (auto& m : meshes) {
                 for (auto face : m.faces_buf) {
