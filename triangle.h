@@ -1,3 +1,6 @@
+#ifndef TRIANGLE_H
+#define TRIANGLE_H
+
 #include "template_concepts.h"
 #include "vec2.h"
 #include "vec3.h"
@@ -8,3 +11,5 @@ template <SizedNumeric T>
 class Triangle {
     std::array<Vec2<T>, 3> points;
 };
+
+#endif

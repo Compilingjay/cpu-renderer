@@ -1,8 +1,9 @@
-#ifndef DISPLAY_H
-#define DISPLAY_H
+#ifndef RENDER_STATE_H
+#define RENDER_STATE_H
 
 #include "camera.h"
 #include "mesh.h"
+#include "string_utils.h"
 #include "template_concepts.h"
 #include "vec2.h"
 #include "vec3.h"
@@ -15,7 +16,6 @@
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
-#include <span>
 #include <vector>
 
 constexpr float FPS = 30.0f;
@@ -36,7 +36,7 @@ struct RenderState {
         std::vector<Mesh<T>> meshes;
 
         RenderState() {};
-        RenderState(const char title[]) {
+        RenderState(const char title[], const char mesh_path[]) {
             if (!SDL_Init(SDL_INIT_VIDEO)) {
                 SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_init: %s", SDL_GetError());
                 throw 1;
@@ -48,8 +48,8 @@ struct RenderState {
                 throw 1;
             }
 
-            int window_width = 2160;
-            int window_height = 1440;
+            int window_width = 1280;
+            int window_height = 720;
 
             window = SDL_CreateWindow(title, window_width, window_height, 0);
             if (window == NULL) {
@@ -79,10 +79,7 @@ struct RenderState {
 
             c_buf = std::vector<uint32_t>(w*h, 0x00000000);
 
-            meshes = std::vector<Mesh<T>>(1);
-            meshes[0].vertex_buf = get_cube_vertices<T>();
-            meshes[0].faces_buf = get_cube_faces<T>();
-            meshes[0].rot = { 0.0f, 0.0f, 0.0f };
+            meshes.push_back(get_mesh_from_obj_file<T>(mesh_path));
             camera = Camera<T> { { 0.0f, 0.0f, -5.0f }, { 0.0f, 0.0f, 0.0f }, 640.0f };
         }
 
@@ -92,8 +89,8 @@ struct RenderState {
 
         Vec2<int> project_perspective(const Vec3<T>& v) noexcept {
             return {
-                static_cast<int>(camera.fov_angle * v.x / (v.z - camera.position.z)),
-                static_cast<int>(camera.fov_angle * v.y / (v.z - camera.position.z))
+                static_cast<int>(camera.fov_angle * v.x / (v.z - camera.position.z)), // subtraction(-) with cam.pos.z leads to a left-handed coordinate system
+                static_cast<int>(camera.fov_angle * v.y / (v.z - camera.position.z))  // whereas addition(+) leads to a right-handed coordinate system
             };
         }
 
@@ -107,11 +104,11 @@ struct RenderState {
             std::vector<Vec3<T>> triangle_vertices(3);
             std::vector<Vec2<int>> transformed_vertices(3);
 
-            for (auto& m : meshes) {
-                for (auto face : m.faces_buf) {
-                    triangle_vertices = { m.vertex_buf[face.x], m.vertex_buf[face.y], m.vertex_buf[face.z] };
+            for (Mesh<T>& m : meshes) {
+                for (Vec3<int>& face : m.faces_buf) {
+                    triangle_vertices = { m.vertex_buf[face.x-1], m.vertex_buf[face.y-1], m.vertex_buf[face.z-1] };
                     for (int i = 0; i < 3; ++i) {
-                        Vec3 rot_vi = rotate_axis_x(rotate_axis_y(rotate_axis_z(triangle_vertices[i], m.rot.z), m.rot.y), m.rot.x);
+                        Vec3 rot_vi = rotate_axis_x(rotate_axis_y(rotate_axis_z(triangle_vertices[i]*2, m.rot.z), m.rot.y), m.rot.x);
                         // Vec3 rot_vi = face_vertices[i];
                         // Vec2 proj_pt = project_orthographic(rot_vi*0.25, c); // fov needs to be reduced for this type of projection to function properly, hence *0.25
                         Vec2 proj_pt = project_perspective(rot_vi);
@@ -123,7 +120,7 @@ struct RenderState {
                         transformed_vertices[0].x, transformed_vertices[0].y,
                         transformed_vertices[1].x, transformed_vertices[1].y, 
                         transformed_vertices[2].x, transformed_vertices[2].y,
-                        0xcc8800ff);
+                        0xf1b166ff);
                 }
 
                 m.rot += 0.02f;
@@ -159,8 +156,9 @@ struct RenderState {
         }
 
         void draw_pixel(int x, int y, uint32_t color) noexcept {
-            assert(x >= 0 && x < w);
-            assert(y >= 0 && y < h);
+            // assert(x >= 0 && x < w);
+            // assert(y >= 0 && y < h);
+            if (x < 0 || x >= w || y < 0 || y >= h) return;
             c_buf[(w * y) + x] = color;
         }
 
@@ -171,9 +169,9 @@ struct RenderState {
         }
 
         void draw_rectangle(int x, int y, int w, int h, uint32_t color) noexcept {
-            assert(w >= 0 && h >= 0);
-            assert(x >= 0 && x+w < this->w);
-            assert(y >= 0 && y+h < this->h);
+            // assert(w >= 0 && h >= 0);
+            // assert(x >= 0 && x+w < this->w);
+            // assert(y >= 0 && y+h < this->h);
             for (int j = 0; j < h; ++j) {
                 for (int i = 0; i < w; ++i) {
                     draw_pixel(x+i, y+j, color);
@@ -182,10 +180,10 @@ struct RenderState {
         }
 
         void draw_line_dda(int x1, int y1, int x2, int y2, uint32_t color) noexcept {
-            assert(x1 >= 0 && x1 < w);
-            assert(y1 >= 0 && y1 < h);
-            assert(x2 >= 0 && x2 < w);
-            assert(y2 >= 0 && y2 < h);
+            // assert(x1 >= 0 && x1 < w);
+            // assert(y1 >= 0 && y1 < h);
+            // assert(x2 >= 0 && x2 < w);
+            // assert(y2 >= 0 && y2 < h);
 
             if (x1 > x2) { // unnecessary, except if you want render left to right
                 std::swap(x1, x2);

@@ -12,8 +12,8 @@ public:
     T y;
     T z;
 
-    Vec3(): x(0), y(0), z(0) {};
-    Vec3(T a, T b, T c): x(a), y(b), z(c) {};
+    constexpr Vec3(): x(0), y(0), z(0) {};
+    constexpr Vec3(T a, T b, T c): x(a), y(b), z(c) {};
 
     Vec3& operator+=(const Vec3& v) {
         x += v.x;
