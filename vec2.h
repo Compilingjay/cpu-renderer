@@ -47,9 +47,9 @@ public:
 };
 
 template <SizedNumeric T>
-inline Vec2<T> operator-(const Vec2<T>& a, const Vec2<T>& b) { return { a.x+b.x, a.y+b.y }; }
-template <SizedNumeric T>
 inline Vec2<T> operator+(const Vec2<T>& a, const Vec2<T>& b) { return { a.x+b.x, a.y+b.y }; }
+template <SizedNumeric T>
+inline Vec2<T> operator-(const Vec2<T>& a, const Vec2<T>& b) { return { a.x-b.x, a.y-b.y }; }
 template <SizedNumeric T>
 inline Vec2<T> operator*(Vec2<T>& a, T b) { return { a.x*b, a.y*b }; };
 

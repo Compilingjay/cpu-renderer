@@ -62,9 +62,9 @@ public:
 };
 
 template <SizedNumeric T>
-inline Vec3<T> operator-(const Vec3<T>& a, const Vec3<T>& b) { return { a.x+b.x, a.y+b.y, a.z+b.z }; }
-template <SizedNumeric T>
 inline Vec3<T> operator+(const Vec3<T>& a, const Vec3<T>& b) { return { a.x+b.x, a.y+b.y, a.z+b.z }; }
+template <SizedNumeric T>
+inline Vec3<T> operator-(const Vec3<T>& a, const Vec3<T>& b) { return { a.x-b.x, a.y-b.y, a.z-b.z }; }
 template <SizedNumeric T>
 inline Vec3<T> operator*(Vec3<T>& a, float b) { return { a.x*b, a.y*b, a.z*b }; };
 
