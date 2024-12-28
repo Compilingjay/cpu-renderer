@@ -44,10 +44,12 @@ public:
 
 inline Vec2 operator+(const Vec2& a, const Vec2& b) { return { a.x + b.x, a.y + b.y }; }
 inline Vec2 operator-(const Vec2& a, const Vec2& b) { return { a.x - b.x, a.y - b.y }; }
-inline Vec2 operator*(Vec2& a, double b) { return { a.x * b, a.y * b }; };
+inline Vec2 operator*(const Vec2& a, double b) { return { a.x * b, a.y * b }; };
 inline bool operator==(const Vec2&a, const Vec2& b) {
     return a.x == b.x && a.y == b.y;
 }
+
+inline Vec2 normalized(const Vec2& v) { return v * (1/v.len()); }
 
 inline double dot(const Vec2& a, const Vec2& b) {  return (a.x * b.x) + (a.y * b.y); }
 inline double cross(const Vec2& a, const Vec2& b) { return (a.x * b.y) - (a.y * b.x); }

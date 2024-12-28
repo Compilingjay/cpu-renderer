@@ -65,9 +65,8 @@ inline bool operator==(const Vec3&a, const Vec3& b) {
     return a.x == b.x && a.y == b.y && a.z == b.z;
 }
 
-inline double dot(const Vec3& a, const Vec3& b) {
-    return (a.x * b.x) + (a.y * b.y) + (a.z * b.z);
-}
+inline Vec3 normalized(const Vec3& v) { return v * (1/v.len()); }
+inline double dot(const Vec3& a, const Vec3& b) { return (a.x * b.x) + (a.y * b.y) + (a.z * b.z); }
 inline Vec3 cross(const Vec3& a, const Vec3& b) {
     return {
         (a.y*b.z) - (a.z*b.y),
