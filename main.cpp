@@ -1,5 +1,6 @@
-#include "SDL3/SDL_log.h"
-#include "render_state.h"
+#include "renderer.h"
+
+#include <cassert>
 
 void on_exit();
 
@@ -14,15 +15,30 @@ int main(int argc, const char* argv[]) {
         return 1;
     }
 
-    RenderState<float>rs;
+    Renderer rs;
+    std::string window_name { argv[1] };
+    std::string mesh_path { argv[2] };
     try {
-        rs = RenderState<float>(argv[1], argv[2]);
+        rs.initialize(window_name, mesh_path);
     } catch (...) {
         return 1;
     }
+
+    int debug_i;
+    auto start_time = std::chrono::high_resolution_clock::now();
+    auto current_time = std::chrono::high_resolution_clock::now();
     
-    rs.run();
-    return 0;
+    while (true) {
+        if (!rs.process_input()) {
+            current_time = std::chrono::high_resolution_clock::now();
+            std::cout << "Program has been running for " << std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count() << " seconds, i = " << debug_i << std::endl;
+            return 0;
+        }
+
+        rs.update();
+        rs.render();
+        ++debug_i;
+    }
 }
 
 void on_exit() {

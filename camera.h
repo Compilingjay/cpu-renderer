@@ -3,12 +3,11 @@
 
 #include "vec3.h"
 
-template <SizedNumeric T>
-class Camera {
+struct Camera {
     public:
-        Vec3<T> position;
-        Vec3<T> rotation;
-        T fov_angle;
+        Vec3 position;
+        Vec3 rotation;
+        double fov_factor;
 };
 
 #endif
