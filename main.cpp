@@ -1,7 +1,5 @@
 #include "renderer.h"
 
-#include <cassert>
-
 void on_exit();
 
 int main(int argc, const char* argv[]) {

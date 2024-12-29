@@ -9,8 +9,6 @@
 #include <array>
 #include <fstream>
 #include <format>
-#include <string>
-#include <vector>
 
 struct Mesh {
     public:

@@ -1,5 +1,8 @@
 #include "renderer.h"
 
+#include <array>
+#include <cstdint>
+
 void Renderer::initialize(std::string title, std::string mesh_path) {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_init: %s", SDL_GetError());
@@ -47,17 +50,54 @@ void Renderer::initialize(std::string title, std::string mesh_path) {
     camera = Camera { { 0.0, 0.0, 0.0 }, { 0.0, 0.0, 0.0 }, 640.0 };
     triangles = {};
     prev_frame_time = SDL_GetTicksNS();
+    flags = 0xff;
+}
+
+void Renderer::deinitialize() {
+    SDL_DestroyWindow(window);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyTexture(texture);
 }
 
 bool Renderer::process_input() {
     while(SDL_PollEvent(&event)) {
         switch (event.type) {
             case SDL_EVENT_KEY_DOWN:
-                if (event.key.scancode != SDLK_ESCAPE) { break; }
+                switch (event.key.key) {
+                    case SDLK_1:
+                        SDL_Log("1");
+                        flags &= BackfaceCulling;
+                        flags |= Vertices | Wireframe;
+                        break;
+                    case SDLK_2:
+                        flags &= BackfaceCulling;
+                        flags |= Wireframe;
+                        break;
+                    case SDLK_3:
+                        flags &= BackfaceCulling;
+                        flags |= PolygonFill;
+                        break;
+                    case SDLK_4:
+                        flags &= BackfaceCulling;
+                        flags |= Wireframe | PolygonFill;
+                        break;
+                    case SDLK_C:
+                        flags &= Vertices | Wireframe | PolygonFill;
+                        flags |= BackfaceCulling;
+                        break;
+                    case SDLK_D:
+                        flags &= Vertices | Wireframe | PolygonFill;
+                        flags |= ~BackfaceCulling;
+                        break;
+                    case SDLK_ESCAPE:
+                        deinitialize();
+                        return false;
+                    default:
+                        return true;
+                }
+                break;
             case SDL_EVENT_QUIT:
-                SDL_DestroyWindow(window);
-                SDL_DestroyRenderer(renderer);
-                SDL_DestroyTexture(texture);
+                deinitialize();
                 return false;
         }
     }
@@ -94,9 +134,11 @@ void Renderer::update() {
                 transformed_vertices[i].z += 5;
             }
 
-            Vec3 normal = cross(transformed_vertices[1] - transformed_vertices[0], transformed_vertices[2] - transformed_vertices[0]);
-            Vec3 camera_ray = camera.position - transformed_vertices[0];
-            if (dot(normal, camera_ray) < 0) { continue; }
+            if ((flags & BackfaceCulling) == BackfaceCulling) {
+                Vec3 normal = cross(transformed_vertices[1] - transformed_vertices[0], transformed_vertices[2] - transformed_vertices[0]);
+                Vec3 camera_ray = camera.position - transformed_vertices[0];
+                if (dot(normal, camera_ray) < 0) { continue; }
+            }
 
             for (int i = 0; i < 3; ++i) {
                 projected_point = project_perspective(transformed_vertices[i]);
@@ -158,8 +200,6 @@ void Renderer::clear_buffer() noexcept {
 }
 
 void Renderer::draw_pixel(int x, int y, uint32_t color) noexcept {
-    // assert(x >= 0 && x < w);
-    // assert(y >= 0 && y < h);
     if (x < 0 || x >= w || y < 0 || y >= h) return;
     c_buf[(w * y) + x] = color;
 }
@@ -184,7 +224,86 @@ void Renderer::draw_line_dda(int x1, int y1, int x2, int y2, uint32_t color) noe
 }
 
 void Renderer::draw_triangle(const Triangle& t, uint32_t color) noexcept {
-    draw_line_dda(t.points[0].x, t.points[0].y, t.points[1].x, t.points[1].y, color);
-    draw_line_dda(t.points[0].x, t.points[0].y, t.points[2].x, t.points[2].y, color);
-    draw_line_dda(t.points[1].x, t.points[1].y, t.points[2].x, t.points[2].y, color);
+    std::array<Vec2, 3> points = { t.points[0], t.points[1], t.points[2] };
+    if ((flags & PolygonFill) == PolygonFill) {
+        if (points[0].y > points[1].y) { std::swap(points[0], points[1]); }
+        if (points[1].y > points[2].y) { std::swap(points[1], points[2]); }
+        if (points[0].y > points[1].y) { std::swap(points[0], points[1]); }
+
+        Vec2 midpoint = {
+            (((points[2].x - points[0].x) * (points[1].y - points[0].y)) / (points[2].y - points[0].y)) + points[0].x,
+            points[1].y
+        };
+
+        bool midpoint_left, vertical_line;
+        if (points[1].x < midpoint.x) {
+            midpoint_left = false;
+        } else {
+            midpoint_left = true;
+        }
+
+        double dxy_left, dxy_right, x_start, x_end;
+        if (points[0].y != points[1].y) {
+            if (!midpoint_left) {
+                dxy_left = (points[1].x - points[0].x) / (points[1].y - points[0].y);
+                dxy_right = (midpoint.x - points[0].x) / (midpoint.y - points[0].y);
+                x_start = points[1].x;
+                x_end = midpoint.x;
+            } else {
+                dxy_left = (midpoint.x - points[0].x) / (midpoint.y - points[0].y);
+                dxy_right = (points[1].x - points[0].x) / (points[1].y - points[0].y);
+                x_start = midpoint.x;
+                x_end = points[1].x;
+            }
+
+            for(int y = midpoint.y; y >= points[0].y; --y) {
+                for (int x = x_start; x <= x_end; ++x) {
+                    draw_pixel(x, y, 0xcc88ddff);
+                }
+                x_start -= dxy_left;
+                x_end -= dxy_right;
+            }
+        }
+
+        if (points[1].y != points[2].y) {
+            if (!midpoint_left) {
+                x_start = points[1].x;
+                x_end = midpoint.x;
+                dxy_left = (points[2].x - points[1].x) / (points[2].y - points[1].y);
+                dxy_right = (points[2].x - midpoint.x) / (points[2].y - midpoint.y);
+            } else {
+                x_start = midpoint.x;
+                x_end = points[1].x;
+                dxy_left = (points[2].x - midpoint.x) / (points[2].y - midpoint.y);
+                dxy_right = (points[2].x - points[1].x) / (points[2].y - points[1].y);
+            }
+
+            for(int y = midpoint.y; y <= points[2].y; ++y) {
+                for (int x = x_start; x <= x_end; ++x) {
+                    draw_pixel(x, y, 0xcc88ddff);
+                }
+                x_start += dxy_left;
+                x_end += dxy_right;
+            }
+        }
+    }
+
+    if ((flags & Wireframe) == Wireframe) {
+        draw_line_dda(t.points[0].x, t.points[0].y, t.points[1].x, t.points[1].y, color);
+        draw_line_dda(t.points[0].x, t.points[0].y, t.points[2].x, t.points[2].y, color);
+        draw_line_dda(t.points[1].x, t.points[1].y, t.points[2].x, t.points[2].y, color);
+    }
+    if ((flags & Vertices) == Vertices) {
+        draw_rectangle(t.points[0].x-1, t.points[0].y-1, 4, 4, 0xff3333ff);
+        draw_rectangle(t.points[1].x-1, t.points[1].y-1, 4, 4, 0xff3333ff);
+        draw_rectangle(t.points[2].x-1, t.points[2].y-1, 4, 4, 0xff3333ff);
+    }
+}
+
+void Renderer::draw_rectangle(int x, int y, int width, int height, uint32_t color) noexcept {
+    for (int j = 0; j < height; ++j) {
+        for (int i = 0; i < width; ++i) {
+            draw_pixel(x+i, y+j, color);
+        }
+    }
 }
