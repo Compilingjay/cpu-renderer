@@ -1,4 +1,5 @@
 #include "renderer.h"
+#include "SDL3/SDL_timer.h"
 
 #include <array>
 #include <cstdint>
@@ -64,6 +65,24 @@ bool Renderer::process_input() {
         switch (event.type) {
             case SDL_EVENT_KEY_DOWN:
                 switch (event.key.key) {
+                    // case SDLK_W:
+                    //     global_rot.x -= 0.1;
+                    //     break;
+                    // case SDLK_S:
+                    //     global_rot.x += 0.1;
+                    //     break;
+                    // case SDLK_A:
+                    //     global_rot.y += 0.1;
+                    //     break;
+                    // case SDLK_D:
+                    //     global_rot.y -= 0.1;
+                    //     break;
+                    // case SDLK_Q:
+                    //     global_rot.z -= 0.1;
+                    //     break;
+                    // case SDLK_E:
+                    //     global_rot.z += 0.1;
+                    //     break;
                     case SDLK_1:
                         SDL_Log("1");
                         flags &= BackfaceCulling;
@@ -85,7 +104,7 @@ bool Renderer::process_input() {
                         flags &= Vertices | Wireframe | PolygonFill;
                         flags |= BackfaceCulling;
                         break;
-                    case SDLK_D:
+                    case SDLK_X:
                         flags &= Vertices | Wireframe | PolygonFill;
                         flags |= ~BackfaceCulling;
                         break;
@@ -121,6 +140,8 @@ void Renderer::update() {
 
     for (Mesh& mesh : meshes) {
         int i = 0;
+        // mesh.rot = global_rot;
+        uint32_t color = 0xccdd33ff;
         for (const std::array<int, 3>& face : mesh.faces) {
             std::array<Vec3, 3> face_vertices = {
                 mesh.vertices[face[0] - 1],
@@ -133,6 +154,9 @@ void Renderer::update() {
                 transformed_vertices[i] = rotate_axis_z(rotate_axis_y(rotate_axis_x(face_vertices[i], mesh.rot.x), mesh.rot.y), mesh.rot.z);
                 transformed_vertices[i].z += 5;
             }
+
+            triangle.color = color;
+            color = 0x000000ff | color+0x132480ff;
 
             if ((flags & BackfaceCulling) == BackfaceCulling) {
                 Vec3 normal = cross(transformed_vertices[1] - transformed_vertices[0], transformed_vertices[2] - transformed_vertices[0]);
@@ -147,11 +171,20 @@ void Renderer::update() {
 
                 triangle.points[i] = projected_point;
             }
-
+            triangle.avg_depth = (transformed_vertices[0].z + transformed_vertices[1].z + transformed_vertices[2].z) / 3;
             triangles.push_back(triangle);
         }
 
         mesh.rot += 0.01;
+    }
+
+    // sort faces by depth (average z)
+    uint32_t color = 0xccdd33ff;
+    for (Triangle& t1 : triangles) {
+
+        for (Triangle& t2 : triangles) {
+            if (t1.avg_depth > t2.avg_depth) { std::swap(t1, t2); }
+        }
     }
 }
 
@@ -159,7 +192,7 @@ void Renderer::render() {
     draw_grid(0x333333ff);
 
     for (const Triangle& t : triangles) {
-        draw_triangle(t, 0x771199ff);
+        draw_triangle(t, t.color, 0x00aabbff, 0xee4444ff);
     }
 
     triangles = {};
@@ -223,7 +256,7 @@ void Renderer::draw_line_dda(int x1, int y1, int x2, int y2, uint32_t color) noe
     }
 }
 
-void Renderer::draw_triangle(const Triangle& t, uint32_t color) noexcept {
+void Renderer::draw_triangle(const Triangle& t, uint32_t fill_color, uint32_t wire_color, uint32_t vertex_color) noexcept {
     std::array<Vec2, 3> points = { t.points[0], t.points[1], t.points[2] };
     if ((flags & PolygonFill) == PolygonFill) {
         if (points[0].y > points[1].y) { std::swap(points[0], points[1]); }
@@ -258,7 +291,7 @@ void Renderer::draw_triangle(const Triangle& t, uint32_t color) noexcept {
 
             for(int y = midpoint.y; y >= points[0].y; --y) {
                 for (int x = x_start; x <= x_end; ++x) {
-                    draw_pixel(x, y, 0xcc88ddff);
+                    draw_pixel(x, y, fill_color);
                 }
                 x_start -= dxy_left;
                 x_end -= dxy_right;
@@ -280,7 +313,7 @@ void Renderer::draw_triangle(const Triangle& t, uint32_t color) noexcept {
 
             for(int y = midpoint.y; y <= points[2].y; ++y) {
                 for (int x = x_start; x <= x_end; ++x) {
-                    draw_pixel(x, y, 0xcc88ddff);
+                    draw_pixel(x, y, fill_color);
                 }
                 x_start += dxy_left;
                 x_end += dxy_right;
@@ -289,14 +322,14 @@ void Renderer::draw_triangle(const Triangle& t, uint32_t color) noexcept {
     }
 
     if ((flags & Wireframe) == Wireframe) {
-        draw_line_dda(t.points[0].x, t.points[0].y, t.points[1].x, t.points[1].y, color);
-        draw_line_dda(t.points[0].x, t.points[0].y, t.points[2].x, t.points[2].y, color);
-        draw_line_dda(t.points[1].x, t.points[1].y, t.points[2].x, t.points[2].y, color);
+        draw_line_dda(t.points[0].x, t.points[0].y, t.points[1].x, t.points[1].y, wire_color);
+        draw_line_dda(t.points[0].x, t.points[0].y, t.points[2].x, t.points[2].y, wire_color);
+        draw_line_dda(t.points[1].x, t.points[1].y, t.points[2].x, t.points[2].y, wire_color);
     }
     if ((flags & Vertices) == Vertices) {
-        draw_rectangle(t.points[0].x-1, t.points[0].y-1, 4, 4, 0xff3333ff);
-        draw_rectangle(t.points[1].x-1, t.points[1].y-1, 4, 4, 0xff3333ff);
-        draw_rectangle(t.points[2].x-1, t.points[2].y-1, 4, 4, 0xff3333ff);
+        draw_rectangle(t.points[0].x-1, t.points[0].y-1, 4, 4, vertex_color);
+        draw_rectangle(t.points[1].x-1, t.points[1].y-1, 4, 4, vertex_color);
+        draw_rectangle(t.points[2].x-1, t.points[2].y-1, 4, 4, vertex_color);
     }
 }
 

@@ -2,7 +2,7 @@
 #define MESH_H
 
 #include "string_utils.h"
-#include "vec3.h"
+#include "vec.h"
 
 #include <SDL3/SDL.h>
 

@@ -5,7 +5,6 @@
 #include "mesh.h"
 #include "string_utils.h"
 #include "triangle.h"
-#include "vec2.h"
 
 #include <SDL3/SDL.h>
 
@@ -38,6 +37,7 @@ class Renderer {
         SDL_Event event;
         std::vector<Triangle> triangles;
         uint64_t prev_frame_time;
+        // Vec3 global_rot;
         uint8_t flags;
 
         Renderer() = default;
@@ -58,7 +58,7 @@ class Renderer {
         void clear_buffer() noexcept;
         void draw_pixel(int x, int y, uint32_t color) noexcept;
         void draw_line_dda(int x1, int y1, int x2, int y2, uint32_t color) noexcept;
-        void draw_triangle(const Triangle& t, uint32_t color) noexcept;
+        void draw_triangle(const Triangle& t, uint32_t fill_color, uint32_t wire_color, uint32_t vertex_color) noexcept;
         void draw_rectangle(int x, int y, int width, int height, uint32_t color) noexcept;
 };
 
