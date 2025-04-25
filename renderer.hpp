@@ -1,10 +1,10 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
-#include "camera.h"
-#include "mesh.h"
-#include "string_utils.h"
-#include "triangle.h"
+#include "camera.hpp"
+#include "mesh.hpp"
+#include "string_utils.hpp"
+#include "triangle.hpp"
 
 #include <SDL3/SDL.h>
 

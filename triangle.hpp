@@ -1,7 +1,7 @@
 #ifndef TRIANGLE_H
 #define TRIANGLE_H
 
-#include "vec.h"
+#include "vec.hpp"
 
 #include <array>
 #include <cstdint>

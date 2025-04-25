@@ -1,4 +1,5 @@
-#include "mesh.h"
+#include "mesh.hpp"
+
 
 Mesh get_mesh_from_obj_file(std::string file_path) {
     std::ifstream ifile = std::ifstream(file_path);

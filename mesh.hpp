@@ -1,8 +1,8 @@
 #ifndef MESH_H
 #define MESH_H
 
-#include "string_utils.h"
-#include "vec.h"
+#include "string_utils.hpp"
+#include "vec.hpp"
 
 #include <SDL3/SDL.h>
 

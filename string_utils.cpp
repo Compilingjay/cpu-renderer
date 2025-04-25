@@ -1,4 +1,4 @@
-#include "string_utils.h"
+#include "string_utils.hpp"
 
 std::vector<std::string> split(std::string string, const std::string& delimitter, int times_to_split) {
     std::vector<std::string> split_string;

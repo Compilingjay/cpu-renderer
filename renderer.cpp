@@ -1,5 +1,4 @@
-#include "renderer.h"
-#include "SDL3/SDL_timer.h"
+#include "renderer.hpp"
 
 #include <array>
 #include <cstdint>
@@ -133,7 +132,7 @@ void Renderer::update() {
     if (time_to_wait > 0) {
         SDL_DelayNS(time_to_wait);
         if (time_to_wait > FRAME_TARGET_TIME_NS) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "wait time exceeded frame time: %f, frame time: %f", time_to_wait, FRAME_TARGET_TIME_NS);
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "wait time exceeded frame time: %llu, frame time: %f", time_to_wait, FRAME_TARGET_TIME_NS);
         }
     }
     prev_frame_time = SDL_GetTicksNS();

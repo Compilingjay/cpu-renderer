@@ -1,7 +1,7 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include "vec.h"
+#include "vec.hpp"
 
 struct Camera {
     public:
