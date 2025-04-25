@@ -19,4 +19,4 @@ file(GLOB SRC_FILES ${CMAKE_CURRENT_LIST_DIR}/*.h ${CMAKE_CURRENT_LIST_DIR}/*.cp
 
 add_executable(${PROJECT_NAME} main.cpp ${SRC_FILES})
 target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
-target_include_directories(${PROJECT_NAME} PRIVATE include)
+target_include_directories(${PROJECT_NAME} INTERFACE ${CMAKE_CURRENT_LIST_DIR})
