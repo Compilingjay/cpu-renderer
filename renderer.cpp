@@ -65,24 +65,24 @@ bool Renderer::process_input() {
         switch (event.type) {
             case SDL_EVENT_KEY_DOWN:
                 switch (event.key.key) {
-                    // case SDLK_W:
-                    //     global_rot.x -= 0.1;
-                    //     break;
-                    // case SDLK_S:
-                    //     global_rot.x += 0.1;
-                    //     break;
-                    // case SDLK_A:
-                    //     global_rot.y += 0.1;
-                    //     break;
-                    // case SDLK_D:
-                    //     global_rot.y -= 0.1;
-                    //     break;
-                    // case SDLK_Q:
-                    //     global_rot.z -= 0.1;
-                    //     break;
-                    // case SDLK_E:
-                    //     global_rot.z += 0.1;
-                    //     break;
+                    case SDLK_W:
+                        camera.rotation.x -= 0.1;
+                        break;
+                    case SDLK_S:
+                        camera.rotation.x += 0.1;
+                        break;
+                    case SDLK_A:
+                        camera.rotation.y += 0.1;
+                        break;
+                    case SDLK_D:
+                        camera.rotation.y -= 0.1;
+                        break;
+                    case SDLK_Q:
+                        camera.rotation.z -= 0.1;
+                        break;
+                    case SDLK_E:
+                        camera.rotation.z += 0.1;
+                        break;
                     case SDLK_1:
                         SDL_Log("1");
                         flags &= BackfaceCulling;
@@ -152,6 +152,7 @@ void Renderer::update() {
             std::array<Vec3, 3> transformed_vertices;
             for (int i = 0; i < 3; ++i) {
                 transformed_vertices[i] = rotate_axis_z(rotate_axis_y(rotate_axis_x(face_vertices[i], mesh.rot.x), mesh.rot.y), mesh.rot.z);
+                transformed_vertices[i] = rotate_axis_z(rotate_axis_y(rotate_axis_x(face_vertices[i], camera.rotation.x), camera.rotation.y), camera.rotation.z);
                 transformed_vertices[i].z += 5;
             }
 
@@ -175,7 +176,7 @@ void Renderer::update() {
             triangles.push_back(triangle);
         }
 
-        mesh.rot += 0.01;
+        // mesh.rot += 0.01;
     }
 
     // sort faces by depth (average z)
