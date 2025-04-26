@@ -83,7 +83,6 @@ bool Renderer::process_input() {
                         camera.rotation.z += 0.1;
                         break;
                     case SDLK_1:
-                        SDL_Log("1");
                         flags &= BackfaceCulling;
                         flags |= Vertices | Wireframe;
                         break;

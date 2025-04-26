@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0...3.30)
 
-project(renderer_3d
+project(renderer
     VERSION 0.1.0
     LANGUAGES CXX C
     )
